@@ -7,9 +7,12 @@ pub mod startup_view;
 pub mod storage_view;
 
 use eframe::egui::{
-    self, Align, Color32, CornerRadius, FontId, Frame, Layout, Margin, Mesh, Pos2, Rect, Response,
-    RichText, Sense, Shape, Stroke, TextStyle, Ui, pos2, vec2,
+    self, Align, Align2, Color32, CornerRadius, FontId, Frame, Layout, Margin, Mesh, Pos2, Rect,
+    Response, RichText, Sense, Shape, Stroke, TextStyle, Ui, pos2, vec2,
 };
+
+use egui_material_icons::MaterialIcon;
+use egui_material_icons::icons::{ICON_CHEVRON_RIGHT, ICON_CLOSE, ICON_EXPAND_MORE};
 
 use crate::storage::tree::Check;
 
@@ -63,6 +66,56 @@ pub fn page_header(ui: &mut Ui, title: &str, subtitle: &str, actions: impl FnOnc
         ui.with_layout(Layout::right_to_left(Align::Center), actions);
     });
     ui.add_space(8.0);
+}
+
+/// Width of the expand/collapse arrow in tree rows.
+pub const EXPANDER_WIDTH: f32 = 22.0;
+
+/// An icon followed by a label, for buttons, badges and hints.
+pub fn icon_label(icon: MaterialIcon, text: &str) -> String {
+    format!("{} {text}", icon.codepoint)
+}
+
+/// A frameless icon button with a tooltip.
+pub fn icon_button(ui: &mut Ui, icon: MaterialIcon, tooltip: &str) -> Response {
+    ui.add(egui::Button::new(icon.rich_text().size(18.0)).frame(false))
+        .on_hover_text(tooltip)
+}
+
+/// The arrow that opens and closes a row.
+pub fn expander(ui: &mut Ui, open: bool, enabled: bool) -> Response {
+    let icon = if open {
+        ICON_EXPAND_MORE
+    } else {
+        ICON_CHEVRON_RIGHT
+    };
+    ui.add_enabled_ui(enabled, |ui| {
+        ui.add_sized(
+            [EXPANDER_WIDTH, EXPANDER_WIDTH],
+            egui::Button::new(icon.rich_text().size(20.0)).frame(false),
+        )
+    })
+    .inner
+}
+
+/// Keeps rows without an expander aligned with rows that have one.
+pub fn expander_space(ui: &mut Ui) {
+    ui.add_space(EXPANDER_WIDTH + ui.spacing().item_spacing.x);
+}
+
+/// An icon on a tinted rounded square, like a Material avatar.
+pub fn icon_tile(ui: &mut Ui, icon: MaterialIcon, color: Color32) -> Response {
+    let (rect, response) = ui.allocate_exact_size(vec2(36.0, 36.0), Sense::hover());
+    ui.painter()
+        .rect_filled(rect, 9, color.gamma_multiply(0.16));
+    ui.painter().text(
+        rect.center(),
+        Align2::CENTER_CENTER,
+        icon.codepoint,
+        FontId::new(22.0, icon.font_family()),
+        color,
+    );
+    response
 }
 
 pub fn primary_button(text: impl Into<String>) -> egui::Button<'static> {
@@ -245,7 +298,7 @@ pub fn banner(ui: &mut Ui, color: Color32, text: &str) -> bool {
             ui.horizontal(|ui| {
                 ui.add(egui::Label::new(RichText::new(text).color(color)).wrap());
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    dismissed = ui.small_button("✕").clicked();
+                    dismissed = icon_button(ui, ICON_CLOSE, "Dismiss").clicked();
                 });
             });
         });

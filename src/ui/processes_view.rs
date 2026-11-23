@@ -1,7 +1,9 @@
 use eframe::egui::{RichText, TextEdit, Ui};
 
 use super::process_table::{ProcessTable, kind_color};
-use super::{page_header, stat_card};
+use super::{icon_label, page_header, stat_card};
+use egui_material_icons::icons::{ICON_AUTORENEW, ICON_REFRESH, ICON_SEARCH};
+
 use crate::app::Tab;
 use crate::system::monitor::{Monitor, Snapshot};
 use crate::system::processes::{AppGroup, ProcKind};
@@ -52,7 +54,7 @@ impl ProcessesView {
             "Background Processes",
             "Helpers, agents and menu bar apps running without a window. Quit the ones you don't need.",
             |ui| {
-                if ui.button("⟳ Refresh").clicked() {
+                if ui.button(icon_label(ICON_REFRESH, "Refresh")).clicked() {
                     monitor.refresh_now();
                 }
             },
@@ -107,7 +109,7 @@ impl ProcessesView {
         ui.horizontal(|ui| {
             ui.add(
                 TextEdit::singleline(&mut self.filter)
-                    .hint_text("🔍 Filter by name")
+                    .hint_text(icon_label(ICON_SEARCH, "Filter by name"))
                     .desired_width(220.0),
             );
             ui.separator();
@@ -118,9 +120,10 @@ impl ProcessesView {
         });
         ui.horizontal_wrapped(|ui| {
             ui.label(
-                RichText::new(
-                    "Quitting only lasts until the process is started again. Processes marked ↻ belong to a startup item;",
-                )
+                RichText::new(format!(
+                    "Quitting only lasts until the process is started again. Processes marked {} belong to a startup item;",
+                    ICON_AUTORENEW.codepoint
+                ))
                 .small()
                 .color(ui.visuals().weak_text_color()),
             );

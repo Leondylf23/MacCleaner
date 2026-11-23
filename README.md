@@ -11,7 +11,7 @@ background processes, and shows where your memory goes.
   backups, iOS firmware files, Mail attachments and saved application state.
 - **Add Folder…** reviews the contents of any folder, such as a projects folder or an external drive.
 - **Folder view before deletion**: expand any item to browse its subfolders and files, with
-  sizes, before you decide. Double-click a name or use 🔍 to reveal it in Finder.
+  sizes, before you decide. Double-click a name or use the open icon to reveal it in Finder.
 - Select whole categories, single folders, or individual files deep inside a folder. Partially
   selected folders show a dash.
 - Shows the size of each folder and category, plus a running **To be freed** total for the selection.
@@ -34,7 +34,7 @@ background processes, and shows where your memory goes.
 - Lists background helpers, agents and menu bar apps, grouped by the app they belong to, with
   memory and CPU.
 - **Quit** asks an app to quit, like the Dock does. **Force Quit** kills it immediately.
-- Processes started by launchd are marked ↻, since they may start again. Turn them off in
+- Processes started by launchd are marked with a restart icon, since they may start again. Turn them off in
   Startup Items to keep them off.
 - macOS components and other users' processes are protected and can't be quit.
 
@@ -63,6 +63,18 @@ open target/release/bundle/MacCleaner.app
 ```
 
 Copy `MacCleaner.app` to `/Applications` if you want to keep it.
+
+### App icon
+
+The icon's source is `assets/icon.svg`. After editing it, regenerate the bundle icon and the
+Dock icon embedded in the binary:
+
+```sh
+./scripts/make_icon.sh   # writes assets/AppIcon.icns and assets/icon-256.rgba
+```
+
+This builds the small renderer in `tools/icon-render` (based on `resvg`), so the app itself
+doesn't depend on an SVG library.
 
 ## Permissions
 
@@ -96,8 +108,16 @@ src/
   startup/             launch agents/daemons, login items, launchctl parsing
   system/              memory statistics, processes, background monitor thread
   ui/                  one view per tab, shared widgets
+assets/icon.svg        app icon source (AppIcon.icns and icon-256.rgba are generated)
+tools/icon-render/     SVG → .iconset renderer used by scripts/make_icon.sh
 scripts/bundle.sh      .app packaging
+scripts/make_icon.sh   icon regeneration
 ```
+
+## Credits
+
+Icons are [Material Symbols](https://fonts.google.com/icons) by Google (Apache License 2.0),
+bundled through the [`egui_material_icons`](https://crates.io/crates/egui_material_icons) crate.
 
 ## Tests
 

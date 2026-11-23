@@ -6,7 +6,12 @@ use std::collections::HashSet;
 use eframe::egui::{self, Align, Id, Label, Layout, Modal, RichText, Sense, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use super::{ACCENT, DANGER, PURPLE, SUCCESS, TEAL, WARNING, badge, danger_button, fraction_bar};
+use super::{
+    ACCENT, DANGER, PURPLE, SUCCESS, TEAL, WARNING, badge, danger_button, expander, expander_space,
+    fraction_bar, icon_label,
+};
+use egui_material_icons::icons::{ICON_ARROW_DOWNWARD, ICON_AUTORENEW, ICON_LOCK};
+
 use crate::system::processes::{AppGroup, ProcKind, quit};
 use crate::util::{display_path, format_memory};
 
@@ -85,7 +90,7 @@ impl ProcessTable {
                 let mut sort_header = |header: &mut egui_extras::TableRow, label: &str, sort: Option<Sort>| {
                     header.col(|ui| match sort {
                         Some(sort) => {
-                            let text = if self.sort == sort { format!("{label} ⏷") } else { label.to_owned() };
+                            let text = if self.sort == sort { format!("{label} {}", ICON_ARROW_DOWNWARD.codepoint) } else { label.to_owned() };
                             if ui.add(egui::Button::new(RichText::new(text).strong()).frame(false)).clicked() {
                                 self.sort = sort;
                             }
@@ -108,12 +113,11 @@ impl ProcessTable {
                     body.row(row_height, |mut row| {
                         row.col(|ui| {
                             if group.procs.len() > 1 {
-                                let arrow = if open { "⏷" } else { "⏵" };
-                                if ui.add(egui::Button::new(arrow).frame(false)).clicked() {
+                                if expander(ui, open, true).clicked() {
                                     toggle = Some(group.key.clone());
                                 }
                             } else {
-                                ui.add_space(ui.spacing().interact_size.y);
+                                expander_space(ui);
                             }
                             let name = ui.add(
                                 Label::new(RichText::new(&group.name).strong())
@@ -148,7 +152,7 @@ impl ProcessTable {
                         });
                         row.col(|ui| {
                             if group.protected {
-                                ui.label(RichText::new("🔒 System").small().color(weak))
+                                ui.label(RichText::new(icon_label(ICON_LOCK, "System")).small().color(weak))
                                     .on_hover_text("Part of macOS or owned by another user. MacCleaner won't quit it.");
                             } else {
                                 if ui.button("Quit").clicked() {
@@ -180,7 +184,7 @@ impl ProcessTable {
                             });
                             row.col(|ui| {
                                 if let Some(label) = &process.launchd_label {
-                                    ui.label(RichText::new("↻").color(WARNING)).on_hover_text(format!(
+                                    ui.label(ICON_AUTORENEW.rich_text().color(WARNING)).on_hover_text(format!(
                                         "Started by launchd job {label}; it may restart after quitting."
                                     ));
                                 }
@@ -259,7 +263,8 @@ impl ProcessTable {
             if let Some(label) = group.launchd_label() {
                 ui.label(
                     RichText::new(format!(
-                        "↻ Started by launchd job “{label}”, so it may start again. To keep it off, turn it off in Startup Items."
+                        "{} Started by launchd job “{label}”, so it may start again. To keep it off, turn it off in Startup Items.",
+                        ICON_AUTORENEW.codepoint
                     ))
                     .color(WARNING),
                 );

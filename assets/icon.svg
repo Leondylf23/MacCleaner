@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- MacCleaner app icon: an apple being wiped clean with a cloth.
+       Render with scripts/make_icon.sh. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8ED9FF"/>
+      <stop offset="1" stop-color="#2F6BE8"/>
+    </linearGradient>
+    <radialGradient id="bgGlow" cx="0.5" cy="0.12" r="0.8">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="appleBody" cx="0.62" cy="0.28" r="0.85">
+      <stop offset="0" stop-color="#FF8577"/>
+      <stop offset="0.42" stop-color="#E8352C"/>
+      <stop offset="1" stop-color="#9B1212"/>
+    </radialGradient>
+    <linearGradient id="leaf" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1F9D4D"/>
+      <stop offset="1" stop-color="#86E58F"/>
+    </linearGradient>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D5DFEE"/>
+    </linearGradient>
+    <linearGradient id="dustFade" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0.22" stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset="0.52" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="dustMask">
+      <rect width="1024" height="1024" fill="url(#dustFade)"/>
+    </mask>
+    <clipPath id="appleClip">
+      <path id="appleShape" d="M512 372 C560 336 650 322 708 362 C780 412 800 520 772 618 C744 716 682 790 610 800 C572 806 548 788 512 788 C476 788 452 806 414 800 C342 790 280 716 252 618 C224 520 244 412 316 362 C374 322 464 336 512 372 Z"/>
+    </clipPath>
+    <filter id="iconShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+    <filter id="clothShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="-8" dy="14" stdDeviation="14" flood-color="#0B1E4D" flood-opacity="0.4"/>
+    </filter>
+    <filter id="blur6" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="blur14" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="blur22" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="22"/></filter>
+  </defs>
+
+  <!-- Background tile -->
+  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#bg)" filter="url(#iconShadow)"/>
+  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#bgGlow)"/>
+
+  <!-- Ground shadow -->
+  <ellipse cx="505" cy="822" rx="236" ry="34" fill="#0A2A70" opacity="0.38" filter="url(#blur22)"/>
+
+  <!-- Stem and leaf -->
+  <path d="M508 382 C504 330 518 290 548 250" fill="none" stroke="#6A3815" stroke-width="26" stroke-linecap="round"/>
+  <path d="M514 360 C512 324 522 296 542 268" fill="none" stroke="#9A6234" stroke-width="7" stroke-linecap="round" opacity="0.8"/>
+  <path d="M536 302 C560 236 642 210 708 236 C682 298 604 330 536 302 Z" fill="url(#leaf)"/>
+  <path d="M544 298 Q622 264 700 240" fill="none" stroke="#D2F7D6" stroke-width="6" stroke-linecap="round" opacity="0.75"/>
+
+  <!-- Apple -->
+  <use href="#appleShape" fill="url(#appleBody)"/>
+  <g clip-path="url(#appleClip)">
+    <!-- Depth: darker base and rim -->
+    <ellipse cx="512" cy="830" rx="300" ry="120" fill="#5E0808" opacity="0.45" filter="url(#blur22)"/>
+    <ellipse cx="236" cy="560" rx="60" ry="260" fill="#6E0B0B" opacity="0.35" filter="url(#blur22)"/>
+
+    <!-- Dust on the side that hasn't been wiped yet -->
+    <g mask="url(#dustMask)">
+      <rect x="200" y="300" width="620" height="540" fill="#8C8073" opacity="0.55"/>
+      <g fill="#5E5246" opacity="0.65">
+        <circle cx="318" cy="470" r="10"/>
+        <circle cx="364" cy="556" r="7"/>
+        <circle cx="298" cy="622" r="8"/>
+        <circle cx="392" cy="446" r="6"/>
+        <circle cx="424" cy="642" r="9"/>
+        <circle cx="342" cy="708" r="6"/>
+        <circle cx="452" cy="520" r="5"/>
+        <circle cx="286" cy="548" r="5"/>
+        <circle cx="406" cy="728" r="5"/>
+        <circle cx="470" cy="420" r="4"/>
+      </g>
+      <path d="M290 520 C330 500 370 512 400 500" fill="none" stroke="#6E6155" stroke-width="10" stroke-linecap="round" opacity="0.45"/>
+      <path d="M318 660 C350 646 392 656 420 640" fill="none" stroke="#6E6155" stroke-width="8" stroke-linecap="round" opacity="0.4"/>
+    </g>
+
+    <!-- Shine on the freshly wiped side -->
+    <path d="M716 380 C790 450 800 560 752 660" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" opacity="0.22" filter="url(#blur14)"/>
+    <ellipse cx="632" cy="420" rx="66" ry="30" transform="rotate(-28 632 420)" fill="#FFFFFF" opacity="0.75" filter="url(#blur6)"/>
+    <ellipse cx="690" cy="476" rx="14" ry="10" fill="#FFFFFF" opacity="0.85"/>
+  </g>
+
+  <!-- Wiping motion -->
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="round">
+    <path d="M520 612 Q500 650 520 690" stroke-width="12" opacity="0.9"/>
+    <path d="M482 628 Q468 660 482 692" stroke-width="10" opacity="0.7"/>
+    <path d="M446 646 Q436 668 446 692" stroke-width="8" opacity="0.5"/>
+  </g>
+
+  <!-- Striped cleaning cloth, tilted against the apple -->
+  <g transform="rotate(-16 720 740)">
+    <g filter="url(#clothShadow)">
+      <path id="clothShape" d="M570 640 C640 612 700 650 770 628 C820 612 860 636 888 624 C900 680 876 730 892 790 C900 830 884 856 868 862 C800 846 740 880 680 860 C640 848 610 870 580 856 C560 820 580 770 562 730 C550 690 566 664 570 640 Z" fill="url(#cloth)"/>
+    </g>
+    <clipPath id="clothClip"><use href="#clothShape"/></clipPath>
+    <g clip-path="url(#clothClip)" fill="none">
+      <!-- Woven stripes near both ends; they bend with the folds -->
+      <g stroke="#3D63E0">
+        <path d="M600 626 C612 690 592 740 608 800 C616 836 606 858 600 872" stroke-width="10"/>
+        <path d="M630 622 C642 686 622 736 638 796 C646 832 636 856 630 870" stroke-width="22"/>
+        <path d="M806 614 C818 678 798 728 814 788 C822 828 812 852 806 868" stroke-width="22"/>
+        <path d="M846 614 C858 678 838 728 854 788 C862 828 852 852 846 868" stroke-width="10"/>
+      </g>
+      <!-- Soft folds -->
+      <g stroke-linecap="round">
+        <path d="M560 712 C650 690 720 744 800 716 C840 702 870 716 900 708" stroke="#7F93B8" stroke-width="30" opacity="0.45" filter="url(#blur6)"/>
+        <path d="M560 698 C650 676 720 730 800 702 C840 688 870 702 900 694" stroke="#FFFFFF" stroke-width="10" opacity="0.9"/>
+        <path d="M560 806 C660 784 730 830 820 800 C852 790 878 800 900 796" stroke="#7F93B8" stroke-width="30" opacity="0.45" filter="url(#blur6)"/>
+        <path d="M560 792 C660 770 730 816 820 786 C852 776 878 786 900 782" stroke="#FFFFFF" stroke-width="10" opacity="0.9"/>
+      </g>
+    </g>
+    <!-- Curled corner -->
+    <path d="M580 856 C600 830 628 822 652 832 C640 846 630 862 622 878 C606 872 592 866 580 856 Z" fill="#5A6E92" opacity="0.35" filter="url(#blur6)"/>
+    <path d="M580 856 C600 830 628 822 652 832 C638 844 626 856 618 870 C604 866 592 862 580 856 Z" fill="#E6ECF5"/>
+  </g>
+
+  <!-- Sparkles -->
+  <g fill="#FFFFFF">
+    <path d="M748 252 Q752 296 796 300 Q752 304 748 348 Q744 304 700 300 Q744 296 748 252 Z"/>
+    <path d="M826 392 Q828 414 850 416 Q828 418 826 440 Q824 418 802 416 Q824 414 826 392 Z" opacity="0.95"/>
+    <path d="M682 520 Q684 536 700 538 Q684 540 682 556 Q680 540 664 538 Q680 536 682 520 Z" opacity="0.9"/>
+  </g>
+</svg>

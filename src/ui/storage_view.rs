@@ -11,9 +11,14 @@ use eframe::egui::{
 };
 
 use super::{
-    ACCENT, DANGER, SUCCESS, WARNING, badge, banner, card, danger_button, fraction_bar,
-    page_header, primary_button, tri_checkbox,
+    ACCENT, DANGER, SUCCESS, WARNING, badge, banner, card, danger_button, expander, expander_space,
+    fraction_bar, icon_button, icon_label, icon_tile, page_header, primary_button, tri_checkbox,
 };
+use egui_material_icons::icons::{
+    ICON_CLOSE, ICON_CREATE_NEW_FOLDER, ICON_DESCRIPTION, ICON_FOLDER, ICON_LOCK, ICON_OPEN_IN_NEW,
+    ICON_RADAR, ICON_REFRESH, ICON_WARNING,
+};
+
 use crate::storage::categories::{CategoryDef, Safety, builtin_categories, custom_category};
 use crate::storage::cleaner::{CleanEvent, CleanReport, CleanTarget, DeleteMode, start_clean};
 use crate::storage::safety::validate_custom_root;
@@ -307,16 +312,16 @@ impl StorageView {
                     }
                 } else {
                     let label = if self.last_scan.is_some() {
-                        "⟳ Rescan"
+                        icon_label(ICON_REFRESH, "Rescan")
                     } else {
-                        "Scan"
+                        icon_label(ICON_RADAR, "Scan")
                     };
                     if ui.add_enabled(!busy, primary_button(label)).clicked() {
                         self.scan_all();
                     }
                 }
                 if ui
-                    .add_enabled(!busy, egui::Button::new("📂 Add Folder…"))
+                    .add_enabled(!busy, egui::Button::new(icon_label(ICON_CREATE_NEW_FOLDER, "Add Folder…")))
                     .on_hover_text("Review the contents of any folder, e.g. a projects folder or an external drive")
                     .clicked()
                 {
@@ -431,7 +436,8 @@ impl StorageView {
                     ui.horizontal(|ui| {
                         ui.label(
                             RichText::new(format!(
-                                "⚠ {unreadable} folders couldn't be read. Grant Full Disk Access to MacCleaner to scan Mail, Trash and backups."
+                                "{} {unreadable} folders couldn't be read. Grant Full Disk Access to MacCleaner to scan Mail, Trash and backups.",
+                                ICON_WARNING.codepoint
                             ))
                             .color(WARNING),
                         );
@@ -598,7 +604,7 @@ impl StorageView {
                     }
                 }
                 if review > 0 {
-                    ui.label(RichText::new(format!("⚠ {review} items are marked Review (personal files or backups). Check them below.")).color(WARNING));
+                    ui.label(RichText::new(format!("{} {review} items are marked Review (personal files or backups). Check them below.", ICON_WARNING.codepoint)).color(WARNING));
                 }
                 ui.add_space(6.0);
                 card(ui).show(ui, |ui| {
@@ -670,21 +676,13 @@ fn category_card(ui: &mut Ui, category: &mut Category, loader: &Loader, interact
         ui.set_width(ui.available_width());
         ui.horizontal(|ui| {
             let can_expand = !category.items.is_empty();
-            let arrow = if category.expanded && can_expand {
-                "⏷"
-            } else {
-                "⏵"
-            };
-            if ui
-                .add_enabled(can_expand, egui::Button::new(arrow).frame(false))
-                .clicked()
-            {
+            if expander(ui, category.expanded && can_expand, can_expand).clicked() {
                 category.expanded = !category.expanded;
             }
             if let Some(on) = tri_checkbox(ui, category.check(), interactive && can_expand) {
                 category.set_selected(on);
             }
-            ui.label(RichText::new(category.def.icon).size(20.0));
+            icon_tile(ui, category.def.icon, ACCENT);
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {
                     let title = ui.add(
@@ -720,10 +718,7 @@ fn category_card(ui: &mut Ui, category: &mut Category, loader: &Loader, interact
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 if category.def.custom
                     && interactive
-                    && ui
-                        .small_button("✕")
-                        .on_hover_text("Remove this folder from the list")
-                        .clicked()
+                    && icon_button(ui, ICON_CLOSE, "Remove this folder from the list").clicked()
                 {
                     remove = true;
                 }
@@ -812,9 +807,7 @@ fn node_rows(
     ui.horizontal(|ui| {
         ui.add_space(depth as f32 * INDENT);
         if node.is_dir {
-            let arrow = if node.expanded { "⏷" } else { "⏵" };
-            if ui
-                .add(egui::Button::new(arrow).frame(false))
+            if expander(ui, node.expanded, true)
                 .on_hover_text("Look inside")
                 .clicked()
             {
@@ -826,20 +819,21 @@ fn node_rows(
                 }
             }
         } else {
-            ui.add_space(ui.spacing().interact_size.y);
+            expander_space(ui);
         }
         let checkbox = tri_checkbox(ui, node.check(), interactive && node.selectable());
         if let Some(on) = checkbox {
             node.set_selected(on);
         }
-        ui.label(if node.is_dir { "📁" } else { "📄" });
+        let (icon, color) = if node.is_dir {
+            (ICON_FOLDER, ACCENT)
+        } else {
+            (ICON_DESCRIPTION, ui.visuals().weak_text_color())
+        };
+        ui.label(icon.rich_text().size(18.0).color(color));
 
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            if ui
-                .small_button("🔍")
-                .on_hover_text("Reveal in Finder")
-                .clicked()
-            {
+            if icon_button(ui, ICON_OPEN_IN_NEW, "Reveal in Finder").clicked() {
                 reveal_in_finder(&node.path);
             }
             ui.allocate_ui_with_layout(
@@ -854,8 +848,13 @@ fn node_rows(
             };
             fraction_bar(ui, fraction, ACCENT, 60.0);
             if node.protected {
-                ui.label("🔒")
-                    .on_hover_text("This folder itself is kept. Expand it to choose items inside.");
+                ui.label(
+                    ICON_LOCK
+                        .rich_text()
+                        .size(16.0)
+                        .color(ui.visuals().weak_text_color()),
+                )
+                .on_hover_text("This folder itself is kept. Expand it to choose items inside.");
             }
             if node.safety == Safety::Review {
                 badge(ui, "Review", WARNING);

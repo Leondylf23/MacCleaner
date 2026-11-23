@@ -116,6 +116,12 @@ struct Entry {
     safety: Safety,
 }
 
+/// Finder's per-folder metadata files, which aren't worth listing.
+fn is_finder_metadata(path: &Path) -> bool {
+    path.file_name()
+        .is_some_and(|n| n == ".DS_Store" || n == ".localized")
+}
+
 fn entry_name(path: &Path) -> String {
     path.file_name()
         .map(|n| n.to_string_lossy().into_owned())
@@ -162,11 +168,7 @@ fn scan_category(def: &CategoryDef, progress: &ScanProgress) -> (Vec<Node>, u64,
                     any_exists = true;
                     for entry in dir.flatten() {
                         let path = entry.path();
-                        // Finder's folder metadata isn't worth listing.
-                        if path
-                            .file_name()
-                            .is_some_and(|n| n == ".DS_Store" || n == ".localized")
-                        {
+                        if is_finder_metadata(&path) {
                             continue;
                         }
                         entries.push(Entry {
@@ -237,13 +239,12 @@ pub fn load_children(path: PathBuf, safety: Safety, tx: Sender<ScanEvent>, ctx: 
         let result = fs::read_dir(&path).map_err(|e| e.to_string()).map(|dir| {
             let entries = dir
                 .flatten()
-                .map(|e| {
-                    let child = e.path();
-                    Entry {
-                        name: entry_name(&child),
-                        path: child,
-                        safety,
-                    }
+                .map(|e| e.path())
+                .filter(|child| !is_finder_metadata(child))
+                .map(|child| Entry {
+                    name: entry_name(&child),
+                    path: child,
+                    safety,
                 })
                 .collect();
             size_entries(entries, &Sizer::new(&path, &progress), &progress)
@@ -273,6 +274,25 @@ mod tests {
         assert!(total < 192 * 1024, "hard link counted twice: {total}");
         assert_eq!(progress.files.load(Ordering::Relaxed), 2);
 
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn expanded_folders_hide_finder_metadata() {
+        let dir = std::env::temp_dir().join(format!("maccleaner-ds-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join(".DS_Store"), b"x").unwrap();
+        fs::write(dir.join(".localized"), b"").unwrap();
+        fs::write(dir.join("report.txt"), b"x").unwrap();
+
+        let (tx, rx) = std::sync::mpsc::channel();
+        load_children(dir.clone(), Safety::Safe, tx, egui::Context::default());
+        let Ok(ScanEvent::ChildrenLoaded { result, .. }) = rx.recv() else {
+            panic!("expected ChildrenLoaded");
+        };
+        let names: Vec<String> = result.unwrap().into_iter().map(|n| n.name).collect();
+        assert_eq!(names, ["report.txt"]);
         fs::remove_dir_all(&dir).unwrap();
     }
 }

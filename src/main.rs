@@ -14,6 +14,8 @@ fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title("MacCleaner")
+            // Dock icon when running outside the .app bundle.
+            .with_icon(app::icon_data())
             .with_inner_size([1200.0, 800.0])
             .with_min_inner_size([960.0, 620.0]),
         ..Default::default()

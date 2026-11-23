@@ -5,9 +5,11 @@ use eframe::egui::{self, Align, Color32, Layout, RichText, ScrollArea, TextEdit,
 
 use super::process_table::ProcessTable;
 use super::{
-    ACCENT, DANGER, PURPLE, SUCCESS, TEAL, WARNING, banner, card, page_header, primary_button,
-    sparkline, stacked_bar, stat_card,
+    ACCENT, DANGER, PURPLE, SUCCESS, TEAL, WARNING, banner, card, icon_label, page_header,
+    primary_button, sparkline, stacked_bar, stat_card,
 };
+use egui_material_icons::icons::ICON_SEARCH;
+
 use crate::system::memory::{MemoryStats, Pressure, purge};
 use crate::system::monitor::{HISTORY_LEN, Monitor, Snapshot};
 use crate::system::processes::{AppGroup, ProcKind};
@@ -133,7 +135,7 @@ impl MemoryView {
                 ui.toggle_value(&mut self.show_all, "Show all");
                 ui.add(
                     TextEdit::singleline(&mut self.filter)
-                        .hint_text("🔍 Filter by name")
+                        .hint_text(icon_label(ICON_SEARCH, "Filter by name"))
                         .desired_width(200.0),
                 );
             });

@@ -5,8 +5,11 @@ use std::thread;
 use eframe::egui::{self, Align, Label, Layout, RichText, ScrollArea, TextEdit, Ui};
 
 use super::{
-    ACCENT, DANGER, SUCCESS, TEAL, WARNING, badge, banner, card, page_header, toggle_switch,
+    ACCENT, DANGER, SUCCESS, TEAL, WARNING, badge, banner, card, icon_button, icon_label,
+    page_header, toggle_switch,
 };
+use egui_material_icons::icons::{ICON_LOCK, ICON_OPEN_IN_NEW, ICON_REFRESH, ICON_SEARCH};
+
 use crate::startup::{self, StartupItem, StartupKind, StartupScan};
 use crate::util::{LOGIN_ITEMS_URL, display_path, open_url, reveal_in_finder};
 
@@ -137,7 +140,10 @@ impl StartupView {
             "Apps and services that start automatically. Turn off what you don't need to speed up login and save memory.",
             |ui| {
                 if ui
-                    .add_enabled(!loading, egui::Button::new("⟳ Refresh"))
+                    .add_enabled(
+                        !loading,
+                        egui::Button::new(icon_label(ICON_REFRESH, "Refresh")),
+                    )
                     .clicked()
                 {
                     self.refresh();
@@ -172,7 +178,7 @@ impl StartupView {
         ui.horizontal(|ui| {
             ui.add(
                 TextEdit::singleline(&mut self.filter)
-                    .hint_text("🔍 Filter by name or label")
+                    .hint_text(icon_label(ICON_SEARCH, "Filter by name or label"))
                     .desired_width(240.0),
             );
             if loading {
@@ -221,7 +227,7 @@ impl StartupView {
                                     .color(ui.visuals().weak_text_color()),
                             );
                             if kind == StartupKind::SystemDaemon {
-                                badge(ui, "🔒 Admin", WARNING);
+                                badge(ui, &icon_label(ICON_LOCK, "Admin"), WARNING);
                             }
                         });
                         ui.label(
@@ -278,10 +284,7 @@ fn item_row(ui: &mut Ui, item: &StartupItem, busy: Option<&str>) -> Option<bool>
                 .clone()
                 .or_else(|| item.program.as_ref().map(Into::into));
             if let Some(target) = target
-                && ui
-                    .small_button("🔍")
-                    .on_hover_text("Reveal in Finder")
-                    .clicked()
+                && icon_button(ui, ICON_OPEN_IN_NEW, "Reveal in Finder").clicked()
             {
                 reveal_in_finder(&target);
             }

@@ -1,0 +1,9 @@
+[package]
+name = "icon-render"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Renders assets/icon.svg into a macOS .iconset and the app's runtime icon"
+
+[dependencies]
+resvg = "0.50.0"

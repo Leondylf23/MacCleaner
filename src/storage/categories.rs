@@ -1,5 +1,11 @@
 use std::path::{Path, PathBuf};
 
+use egui_material_icons::MaterialIcon;
+use egui_material_icons::icons::{
+    ICON_ATTACH_EMAIL, ICON_BUILD, ICON_DELETE, ICON_DOWNLOAD, ICON_FOLDER_OPEN, ICON_INVENTORY_2,
+    ICON_PHONE_IPHONE, ICON_RECEIPT_LONG, ICON_STORAGE, ICON_SYSTEM_UPDATE, ICON_WEB_ASSET,
+};
+
 use crate::util::home_dir;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -31,7 +37,7 @@ pub struct Location {
 pub struct CategoryDef {
     pub name: String,
     pub description: String,
-    pub icon: &'static str,
+    pub icon: MaterialIcon,
     pub locations: Vec<Location>,
     /// Items are always deleted permanently; moving the Trash into the Trash frees nothing.
     pub permanent_only: bool,
@@ -68,7 +74,7 @@ fn whole(relative: &str, label: &'static str, safety: Safety) -> Location {
 
 fn category(
     name: &str,
-    icon: &'static str,
+    icon: MaterialIcon,
     description: &str,
     locations: Vec<Location>,
 ) -> CategoryDef {
@@ -88,19 +94,19 @@ pub fn builtin_categories() -> Vec<CategoryDef> {
     vec![
         category(
             "User Caches",
-            "🗄",
+            ICON_STORAGE,
             "Temporary files apps keep to load faster. Apps rebuild them when needed.",
             vec![children("Library/Caches", Safe)],
         ),
         category(
             "Logs & Crash Reports",
-            "📄",
+            ICON_RECEIPT_LONG,
             "Diagnostic logs and crash reports written by apps.",
             vec![children("Library/Logs", Safe)],
         ),
         category(
             "Xcode & Simulators",
-            "🔨",
+            ICON_BUILD,
             "Build products, device support files and simulator caches. Archives are needed to symbolicate old crash reports.",
             vec![
                 children("Library/Developer/Xcode/DerivedData", Safe),
@@ -116,7 +122,7 @@ pub fn builtin_categories() -> Vec<CategoryDef> {
         ),
         category(
             "Developer Package Caches",
-            "📦",
+            ICON_INVENTORY_2,
             "Downloaded packages kept by npm, Cargo, Gradle, Maven and others. They are downloaded again when needed.",
             vec![
                 whole(".npm/_cacache", "npm cache", Safe),
@@ -136,20 +142,20 @@ pub fn builtin_categories() -> Vec<CategoryDef> {
             permanent_only: true,
             ..category(
                 "Trash",
-                "🗑",
+                ICON_DELETE,
                 "Files already in the Trash. Deleted permanently.",
                 vec![children(".Trash", Safe)],
             )
         },
         category(
             "Downloads",
-            "⬇",
+            ICON_DOWNLOAD,
             "Everything in your Downloads folder. Review before deleting.",
             vec![children("Downloads", Review)],
         ),
         category(
             "iPhone & iPad Backups",
-            "📱",
+            ICON_PHONE_IPHONE,
             "Local device backups made by Finder. Make sure you have another backup first.",
             vec![children(
                 "Library/Application Support/MobileSync/Backup",
@@ -158,7 +164,7 @@ pub fn builtin_categories() -> Vec<CategoryDef> {
         ),
         category(
             "iOS Software Updates",
-            "⟳",
+            ICON_SYSTEM_UPDATE,
             "Downloaded iPhone and iPad firmware files.",
             vec![
                 children("Library/iTunes/iPhone Software Updates", Safe),
@@ -167,7 +173,7 @@ pub fn builtin_categories() -> Vec<CategoryDef> {
         ),
         category(
             "Mail Attachments",
-            "✉",
+            ICON_ATTACH_EMAIL,
             "Copies of attachments you opened in Mail. The originals stay in your mailbox.",
             vec![children(
                 "Library/Containers/com.apple.mail/Data/Library/Mail Downloads",
@@ -176,7 +182,7 @@ pub fn builtin_categories() -> Vec<CategoryDef> {
         ),
         category(
             "Saved Application State",
-            "🪟",
+            ICON_WEB_ASSET,
             "Window positions apps restore at launch.",
             vec![children("Library/Saved Application State", Safe)],
         ),
@@ -192,7 +198,7 @@ pub fn custom_category(path: PathBuf) -> CategoryDef {
     CategoryDef {
         name,
         description: format!("Custom folder: {}", crate::util::display_path(&path)),
-        icon: "📂",
+        icon: ICON_FOLDER_OPEN,
         locations: vec![Location {
             path,
             mode: RootMode::Children,

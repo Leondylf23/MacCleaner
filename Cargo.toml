@@ -15,6 +15,7 @@ path = "src/main.rs"
 dirs = "7.0.0"
 eframe = "0.37.0"
 egui_extras = "0.37.0"
+egui_material_icons = { version = "0.9.0", features = ["filled", "outline"] }
 libc = "0.2.191"
 objc2 = "0.6.5"
 objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "libc", "NSRunningApplication", "NSWorkspace"] }
