@@ -1,0 +1,177 @@
+use eframe::egui::{
+    self, Align2, Color32, FontId, Frame, Margin, Response, RichText, Sense, Ui, pos2, vec2,
+};
+
+use crate::system::monitor::Monitor;
+use crate::system::processes::ProcKind;
+use crate::ui::memory_view::MemoryView;
+use crate::ui::processes_view::ProcessesView;
+use crate::ui::startup_view::StartupView;
+use crate::ui::storage_view::StorageView;
+use crate::ui::{self, ACCENT};
+use crate::util::{FULL_DISK_ACCESS_URL, format_memory, open_url};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Tab {
+    Storage,
+    Startup,
+    Processes,
+    Memory,
+}
+
+pub struct MacCleanerApp {
+    tab: Tab,
+    storage: StorageView,
+    startup: StartupView,
+    processes: ProcessesView,
+    memory: MemoryView,
+    monitor: Monitor,
+}
+
+impl MacCleanerApp {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        ui::apply_style(&cc.egui_ctx);
+        let ctx = cc.egui_ctx.clone();
+        Self {
+            tab: Tab::Storage,
+            storage: StorageView::new(ctx.clone()),
+            startup: StartupView::new(ctx.clone()),
+            processes: ProcessesView::new(),
+            memory: MemoryView::new(),
+            monitor: Monitor::start(ctx),
+        }
+    }
+
+    fn navigation(&mut self, ui: &mut Ui, snapshot: &crate::system::monitor::Snapshot) {
+        ui.add_space(14.0);
+        ui.horizontal(|ui| {
+            ui.add_space(6.0);
+            ui.label(RichText::new("✨").size(22.0));
+            ui.vertical(|ui| {
+                ui.label(RichText::new("MacCleaner").strong().size(17.0));
+                ui.label(
+                    RichText::new(concat!("Version ", env!("CARGO_PKG_VERSION")))
+                        .small()
+                        .color(ui.visuals().weak_text_color()),
+                );
+            });
+        });
+        ui.add_space(16.0);
+
+        let memory_summary = snapshot.memory.map_or_else(
+            || "…".to_owned(),
+            |m| {
+                format!(
+                    "{} of {} used",
+                    format_memory(m.used()),
+                    format_memory(m.total)
+                )
+            },
+        );
+        let background = snapshot
+            .groups
+            .iter()
+            .filter(|g| !g.protected && g.kind != ProcKind::App)
+            .count();
+        let background_summary = if snapshot.groups.is_empty() {
+            "Helpers & agents".to_owned()
+        } else {
+            format!("{background} you can quit")
+        };
+        let entries = [
+            (Tab::Storage, "💾", "Storage", self.storage.summary()),
+            (Tab::Startup, "🚀", "Startup Items", self.startup.summary()),
+            (Tab::Processes, "⚙", "Background", background_summary),
+            (Tab::Memory, "📊", "Memory", memory_summary),
+        ];
+        for (tab, icon, title, subtitle) in entries {
+            if nav_item(ui, self.tab == tab, icon, title, &subtitle).clicked() {
+                self.tab = tab;
+            }
+            ui.add_space(2.0);
+        }
+
+        ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
+            ui.add_space(12.0);
+            if ui
+                .add(egui::Button::new("🔐 Full Disk Access…").frame(false))
+                .on_hover_text("Lets MacCleaner measure the Trash, Mail and device backups")
+                .clicked()
+            {
+                open_url(FULL_DISK_ACCESS_URL);
+            }
+        });
+    }
+}
+
+fn nav_item(ui: &mut Ui, selected: bool, icon: &str, title: &str, subtitle: &str) -> Response {
+    let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), 46.0), Sense::click());
+    let visuals = ui.visuals();
+    let fill = if selected {
+        ACCENT.gamma_multiply(0.18)
+    } else if response.hovered() {
+        visuals.widgets.hovered.weak_bg_fill
+    } else {
+        Color32::TRANSPARENT
+    };
+    let painter = ui.painter();
+    painter.rect_filled(rect, 8, fill);
+    let color = if selected {
+        ACCENT
+    } else {
+        visuals.text_color()
+    };
+    painter.text(
+        pos2(rect.left() + 22.0, rect.center().y),
+        Align2::CENTER_CENTER,
+        icon,
+        FontId::proportional(18.0),
+        color,
+    );
+    painter.text(
+        pos2(rect.left() + 42.0, rect.center().y - 8.0),
+        Align2::LEFT_CENTER,
+        title,
+        FontId::proportional(14.0),
+        color,
+    );
+    painter.text(
+        pos2(rect.left() + 42.0, rect.center().y + 9.0),
+        Align2::LEFT_CENTER,
+        subtitle,
+        FontId::proportional(11.0),
+        visuals.weak_text_color(),
+    );
+    response
+}
+
+impl eframe::App for MacCleanerApp {
+    fn ui(&mut self, ui: &mut Ui, _frame: &mut eframe::Frame) {
+        self.monitor
+            .track_processes(matches!(self.tab, Tab::Processes | Tab::Memory));
+        let snapshot = self.monitor.latest();
+
+        egui::Panel::left("navigation")
+            .exact_size(220.0)
+            .resizable(false)
+            .frame(
+                Frame::side_top_panel(ui.style())
+                    .inner_margin(Margin::symmetric(10, 0))
+                    .fill(ui.visuals().faint_bg_color),
+            )
+            .show(ui, |ui| self.navigation(ui, &snapshot));
+
+        egui::CentralPanel::default()
+            .frame(Frame::central_panel(ui.style()).inner_margin(Margin::symmetric(22, 16)))
+            .show(ui, |ui| match self.tab {
+                Tab::Storage => self.storage.ui(ui),
+                Tab::Startup => self.startup.ui(ui),
+                Tab::Processes => {
+                    let mut tab = self.tab;
+                    self.processes.ui(ui, &snapshot, &self.monitor, &mut tab);
+                    self.tab = tab;
+                }
+                Tab::Memory => self.memory.ui(ui, &snapshot, &self.monitor),
+            });
+    }
+}

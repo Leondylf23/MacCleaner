@@ -1,0 +1,31 @@
+[package]
+name = "maccleaner"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "MacCleaner: storage cleanup, startup items, background processes and memory monitor for macOS"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "MacCleaner"
+path = "src/main.rs"
+
+[dependencies]
+dirs = "7.0.0"
+eframe = "0.37.0"
+egui_extras = "0.37.0"
+libc = "0.2.191"
+objc2 = "0.6.5"
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "libc", "NSRunningApplication", "NSWorkspace"] }
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSArray", "NSString", "NSURL"] }
+plist = "1.10.4"
+rayon = "1.12.0"
+rfd = "0.18.0"
+sysinfo = "0.40.4"
+trash = "5.4.0"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true
